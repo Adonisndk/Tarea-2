@@ -1,4 +1,140 @@
-hola = ('hola andoni')
-print(hola)
-Chupapi muñaño muñaño chupapi chupapi muñañoo
-wena 
+import datetime
+
+class Repartidor:
+    def __init__(self, rut, nombre_completo, fecha_nacimiento, direccion, correo, telefono, estado_civil, comuna, region):
+        self.rut = rut
+        self.nombre_completo = nombre_completo
+        self.fecha_nacimiento = fecha_nacimiento
+        self.direccion = direccion
+        self.correo = correo
+        self.telefono = telefono
+        self.estado_civil = estado_civil
+        self.comuna = comuna
+        self.region = region
+
+class Envio:
+    def __init__(self, codigo, remitente, receptor, fecha_envio, peso, repartidor, estado="en tránsito"):
+        self.codigo = codigo
+        self.remitente = remitente
+        self.receptor = receptor
+        self.fecha_envio = fecha_envio
+        self.peso = peso
+        self.costo = self.calcular_costo()
+        self.repartidor = repartidor
+        self.estado = estado
+        self.fecha_entrega = None
+        self.encargado_despacho = None
+
+    def calcular_costo(self):
+        base_cost = 1800
+        if self.peso <= 1:
+            return base_cost
+        else:
+            extra_cost = (self.peso - 1) * 1000
+            discount = min((self.peso // 10) * 0.05, 0.5)  # Hasta 50% de descuento
+            total_cost = base_cost + extra_cost
+            return total_cost * (1 - discount)
+
+    def actualizar_estado(self, nuevo_estado, fecha_entrega=None, encargado_despacho=None):
+        self.estado = nuevo_estado
+        if nuevo_estado == "entregado":
+            self.fecha_entrega = fecha_entrega
+            self.encargado_despacho = encargado_despacho
+
+repartidores = []
+envios = []
+
+def ingresar_repartidor():
+    rut = input("Ingrese RUT: ")
+    nombre_completo = input("Ingrese nombre completo: ")
+    fecha_nacimiento = input("Ingrese fecha de nacimiento (YYYY-MM-DD): ")
+    direccion = input("Ingrese dirección: ")
+    correo = input("Ingrese correo electrónico: ")
+    telefono = input("Ingrese teléfono: ")
+    estado_civil = input("Ingrese estado civil: ")
+    comuna = input("Ingrese comuna: ")
+    region = input("Ingrese región: ")
+    
+    repartidor = Repartidor(rut, nombre_completo, fecha_nacimiento, direccion, correo, telefono, estado_civil, comuna, region)
+    repartidores.append(repartidor)
+    print("Repartidor ingresado con éxito.")
+
+def ingresar_envio():
+    codigo = input("Ingrese código de envío: ")
+    remitente = {
+        "rut": input("Ingrese RUT del remitente: "),
+        "nombre_completo": input("Ingrese nombre completo del remitente: "),
+        "direccion": input("Ingrese dirección del remitente: "),
+        "pais": input("Ingrese país del remitente: "),
+        "localidad": input("Ingrese localidad del remitente: ")
+    }
+    receptor = {
+        "rut": input("Ingrese RUT del receptor: "),
+        "nombre_completo": input("Ingrese nombre completo del receptor: "),
+        "direccion": input("Ingrese dirección del receptor: "),
+        "pais": input("Ingrese país del receptor: "),
+        "localidad": input("Ingrese localidad del receptor: ")
+    }
+    fecha_envio = input("Ingrese fecha de envío (YYYY-MM-DD): ")
+    peso = float(input("Ingrese peso del paquete: "))
+    repartidor_codigo = input("Ingrese RUT del repartidor: ")
+    repartidor = next((r for r in repartidores if r.rut == repartidor_codigo), None)
+    
+    if repartidor is None:
+        print("Repartidor no encontrado.")
+        return
+    
+    envio = Envio(codigo, remitente, receptor, fecha_envio, peso, repartidor)
+    envios.append(envio)
+    print("Envío ingresado con éxito.")
+
+def modificar_envio():
+    codigo = input("Ingrese código de envío a modificar: ")
+    envio = next((e for e in envios if e.codigo == codigo), None)
+    
+    if envio is None:
+        print("Envío no encontrado.")
+        return
+    
+    nuevo_estado = input("Ingrese nuevo estado del envío (en tránsito, no entregado, entregado, sin registro): ")
+    if nuevo_estado == "entregado":
+        fecha_entrega = input("Ingrese fecha de entrega (YYYY-MM-DD): ")
+        encargado_despacho = input("Ingrese nombre del encargado de despacho: ")
+        envio.actualizar_estado(nuevo_estado, fecha_entrega, encargado_despacho)
+    else:
+        envio.actualizar_estado(nuevo_estado)
+    
+    print("Estado del envío modificado con éxito.")
+
+def listar_envios():
+    for envio in envios:
+        print(f"Código: {envio.codigo}, Remitente: {envio.remitente['nombre_completo']}, Receptor: {envio.receptor['nombre_completo']}, Estado: {envio.estado}, Costo: {envio.costo}")
+
+def main():
+    while True:
+        print("******** Bienvenido a la aplicación de Envíos Instantáneos ********")
+        print("1.- Ingrese un repartidor")
+        print("2.- Ingrese un envío")
+        print("3.- Modifique un envío")
+        print("4.- Listar todos los envíos")
+        print("5.- Salir")
+        print("**********************************************************************")
+        
+        opcion = input("Seleccione una opción: ")
+        
+        if opcion == "1":
+            ingresar_repartidor()
+        elif opcion == "2":
+            ingresar_envio()
+        elif opcion == "3":
+            modificar_envio()
+        elif opcion == "4":
+            listar_envios()
+        elif opcion == "5":
+            print("Saliendo de la aplicación.")
+            break
+        else:
+            print("Opción no válida. Por favor, intente de nuevo.")
+
+if __name__ == "__main__":
+    main()
